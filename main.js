@@ -8,6 +8,10 @@ $.getJSON('http://happychang.github.io/fever-data/Dengue.json', function (data) 
     DengueTW = data;
 });
 
+$.getJSON('http://happychang.github.io/fever-data/population.json', function (data) {
+    population = data;
+});
+
 function initialize() {
 
     /*map setting*/
@@ -28,6 +32,10 @@ function initialize() {
                 countyId = value.getProperty('COUNTY_ID'),
                 townId = value.getProperty('TOWN_ID'),
                 count = 0;
+
+        if (population[key]) {
+	    value.setProperty('pop', population[key]);
+        }
     
         if(countyId.length === 2) {
             countyId += '000';
@@ -71,7 +79,7 @@ function initialize() {
 
     map.data.setStyle(function (feature) {
 
-	color = ColorBar(feature.getProperty('num'), feature.getProperty('Shape_Area')); 
+	color = ColorBar(feature.getProperty('num'), feature.getProperty('pop')); 
         
         return {
             fillColor: color,
@@ -86,10 +94,10 @@ function initialize() {
         map.data.revertStyle();
         map.data.overrideStyle(event.feature, {fillColor: 'white'});
 
-	area = parseInt(event.feature.getProperty('Shape_Area')*10000000)/1000;
-        density = parseInt(event.feature.getProperty('num') / area);
+	pop = event.feature.getProperty('pop');
+        density = parseInt(event.feature.getProperty('num') / pop * 10000)/100;
 
-        $('#content').html('<div>' + Cunli + '：' + event.feature.getProperty('num') + '例(' + area + ' km2, ' + density + ')</div>').removeClass('text-muted');
+        $('#content').html('<div>' + Cunli + '：' + event.feature.getProperty('num') + '例(' + pop + '人, ' + density + '%)</div>').removeClass('text-muted');
     });
 
     map.data.addListener('mouseout', function (event) {
